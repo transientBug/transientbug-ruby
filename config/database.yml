@@ -1,0 +1,20 @@
+default: &default
+  pool:     5
+  timeout:  5000
+  adapter:  postgresql
+  host:     localhost
+  encoding: unicode
+  username: postgres
+
+development:
+  <<: *default
+  database: transientbug_development
+
+test:
+  <<: *default
+  database: transientbug_test
+
+production:
+  <<: *default
+  database: transientbug_production
+

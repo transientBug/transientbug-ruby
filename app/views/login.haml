@@ -1,0 +1,21 @@
+- content_for :title do
+  Login
+
+- content_for :header do
+  %h1.title Login
+
+- content_for :body do
+  %section.section
+    .container
+      .columns
+        .column.is-third
+        .column.is-third
+          %form{ action: '/login', method: 'post' }
+            %p.control
+              %input.input{ type: 'text', placeholder: 'Username', name: 'username' }
+            %p.control
+              %input.input{ type: 'password', placeholder: '*******', name: 'password' }
+
+            %p.control
+              %button.button.is-primary{ type: 'submit' }
+                Login

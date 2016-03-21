@@ -1,0 +1,11 @@
+default: &defaut
+  key: <%= ENV['PUSHBULLET_KEY'] %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

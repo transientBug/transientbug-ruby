@@ -1,0 +1,22 @@
+defaults: &defaults
+  region: us-west-2
+
+  # We've got some services, s3 for example, which are in the us-standard (also
+  # know as us-east-1) region, so make sure to list them all
+  s3:
+    region: us-east-1 # Doesn't seem to want to apply
+
+  access_key_id: <%= ENV['AWS_KEY'] %>
+  secret_access_key: <%= ENV['AWS_SECRET'] %>
+
+development:
+  <<: *defaults
+  http_wire_trace: true
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
+  s3:
+    region: us-west-2
