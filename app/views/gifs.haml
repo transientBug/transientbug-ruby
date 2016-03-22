@@ -1,0 +1,13 @@
+- content_for :title do
+  Gifs
+
+- content_for :header do
+  %h1.title Gifs
+
+- content_for :body do
+  %section.section
+    .container
+      .cols{ style: "-webkit-column-count: 5; -webkit-column-gap: 2em;" }
+        - @gifs.each do |gif|
+          .gif
+            <img src="/public/gifs/#{ gif[:file] }">

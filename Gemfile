@@ -60,7 +60,8 @@ gem 'sequel_secure_password'
 # gem 'sidekiq'  # Redis Backed
 # gem 'sneakers' # RabbitMQ Backed
 
-# Frontend
+# Web Sever and Frontend
+gem 'thin'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sinatra-flash'

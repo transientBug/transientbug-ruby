@@ -1,15 +1,15 @@
-require 'rubygems'
-require 'bundler/setup'
-
 require 'tilt/erb'
 require 'yaml'
 
-require 'require_all'
+require 'active_support/all'
 
 module AshFrame
-  VERSION = '0.0.1'
-
   module_function
+
+  def root= path
+    @@root = Pathname.new path
+  end
+
   def root
     @@root ||= Pathname.new File.dirname(__FILE__)
   end
@@ -36,10 +36,3 @@ module AshFrame
       "Error: #{ e.message }"
   end
 end
-
-Bundler.require :default, AshFrame.environment
-
-require_rel %w| config/initializers lib app |
-
-# config.ru takes care of firing up the sinatra server, so now all we have to
-# do is sit back and relax

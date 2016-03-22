@@ -21,7 +21,7 @@ module AshFrame
   module_function
   def logger
     @@logger_io ||= MultiIO.new(
-      File.open(AshFrame.root.join('logs', "git-blog.#{ Time.current.iso8601 }.log"), 'a'),
+      File.open(AshFrame.root.join('logs', "ash_frame.#{ Time.current.iso8601 }.log"), 'a'),
       STDOUT
     )
 

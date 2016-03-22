@@ -1,1 +1,1 @@
-require_relative './ash_frame'
+require_relative './app'
