@@ -10,7 +10,7 @@ module AshFrame
       #
       # @return [OpenStruct]
       def config
-        @@_config ||= OpenStruct.new
+        @_config ||= OpenStruct.new
       end
 
       # Class level DSL for setting up default configs

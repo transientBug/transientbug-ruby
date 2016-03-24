@@ -7,7 +7,26 @@
 - content_for :body do
   %section.section
     .container
-      .cols{ style: "-webkit-column-count: 5; -webkit-column-gap: 2em;" }
+      .gif-columns{ style: "-webkit-column-count: 4; -webkit-column-gap: 2em;" }
         - @gifs.each do |gif|
-          .gif
-            <img src="/public/gifs/#{ gif[:file] }">
+          .gif{ style: "padding-bottom: 2em; -webkit-column-break-inside: avoid;" }
+            .card
+              .card-image
+                %figure.image.is-4by3
+                  %a{ href: "/images/gifs/#{ gif[:file] }" }
+                    %img{ src: "/images/gifs/#{ gif[:file] }", style: "height: 100%;" }
+              .card-content
+                - if gif[:data].present?
+                  .media
+                    .media-content
+                      %h5.title.is-5= gif[:data].title
+                      %p.subtitle.is-6= gif[:file]
+                  .content
+                    - gif[:data].tags.each do |tag|
+                      %a{ href: "/gifs/tag/#{ tag }" }
+                        %span.tag= tag
+                - else
+                  .media
+                    .media-content
+                      %h5.title.is-5= gif[:file]
+                  .content

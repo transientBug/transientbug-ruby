@@ -1,7 +1,7 @@
 class GifController < ApplicationController
   get '/gifs' do
-    @gif_names = Dir[ AshFrame.root.join('public', 'gifs', '**/*.gif') ].map do |img|
-      img.gsub( AshFrame.root.join('public', 'gifs').to_s + '/', '' )
+    @gif_names = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*.gif') ].map do |img|
+      img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
     end
 
     @gif_data = Gif.where(file_key: @gif_names).inject({}) do |memo, gif|
@@ -22,20 +22,29 @@ class GifController < ApplicationController
   post '/gifs' do
     authenticate!
 
-    redirect to("gifs/#{ id }")
+    redirect to("/gifs/#{ id }")
   end
 
-  get '/gifs/:id' do
+  get '/gifs/search' do
+  end
+
+  get '/gifs/tags' do
+  end
+
+  get '/gifs/tag/:id' do
+  end
+
+  get '/gif/:id' do
     haml :gif
   end
 
-  patch '/gifs/:id' do
+  patch '/gif/:id' do
     authenticate!
 
     redirect to("/gifs/#{ id }")
   end
 
-  delete '/gifs/:id' do
+  delete '/gif/:id' do
     authenticate!
 
     redirect to('/gifs')

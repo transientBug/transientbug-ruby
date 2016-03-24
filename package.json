@@ -15,7 +15,7 @@
     "babel-preset-stage-0": "^6.5.0",
     "babel-preset-stage-1": "^6.5.0",
     "babel-runtime": "^6.5.0",
-    "bulma": "0.0.10",
+    "bulma": "0.0.16",
     "css-loader": "^0.23.1",
     "d3": "^3.5.14",
     "extract-text-webpack-plugin": "^1.0.1",
