@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+
+require_relative '../app'
+
+require 'optparse'
+require 'ostruct'
+require 'rubygems/package'
+require 'zlib'
+
+options = OpenStruct.new(
+  images: nil,
+  json:   nil
+)
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: importer -j <json> -i <images> -u <user>"
+
+  opts.on('-iIMAGES', '--images=IMAGES', "Images tar") do |images|
+    options.images = images
+  end
+
+  opts.on('-jJSON', '--json=JSON', "Image metadata JSON") do |json|
+    options.json = json
+  end
+
+  opts.on('-uUSER', '--user=USER', "User ID or username who should own the images") do |user|
+    options.user = user
+  end
+
+  opts.on('-lLIMIT', '--limit=LIMIT', "Limit for the number of images to import") do |user|
+    options.user = user
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+
+  opts.on_tail("--version", "Show version") do
+    puts '0.0.1'
+    exit
+  end
+end.parse! ARGV
+
+user = User.find{ self.|(id =~ options.user.to_i, username.ilike("%#{ options.user }%")) }
+
+metadata = []
+
+File.open options.json, 'r' do |file|
+  metadata = JSON.parse(file.read)
+end
+
+metadata_by_filename = metadata.inject({}) do |memo, entry|
+  memo[entry['filename']] = entry
+  memo
+end
+
+errors = []
+File.open options.images, 'rb' do |file|
+  Zlib::GzipReader.wrap file do |gz|
+    Gem::Package::TarReader.new gz do |tar|
+      tar.each do |entry|
+        filename = entry.full_name
+        ext = filename.split('.').last
+
+        unless metadata_by_filename.has_key? filename
+          errors << "Image #{ filename } not in image metadata, skipping"
+          next
+        end
+
+        meta = metadata_by_filename[filename]
+        tags = meta['tags'].map{ |tag| tag.gsub '_', ' ' }
+
+        new_filename = [ meta['short_code'], ext ].join '.'
+        new_path = AshFrame.root.join('public', 'images', 'gifs', new_filename)
+
+        new_path.write entry.read
+        Gif.create filename: new_filename,
+                         short_code: meta['short_code'],
+                         title: meta['title'],
+                         tags: tags,
+                         enabled: meta['disable'],
+                         created_at: Time.at(meta['created']),
+                         user: user
+
+        print '.'
+      end
+    end
+  end
+end
+
+puts
+puts errors

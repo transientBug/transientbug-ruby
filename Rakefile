@@ -7,7 +7,7 @@ CLEAN << 'coverage/'
 CLEAN << 'doc/'
 
 task :environment do
-  require_relative './ash_frame'
+  require_relative './app'
 end
 
 namespace :db do
