@@ -9,7 +9,9 @@ require 'zlib'
 
 options = OpenStruct.new(
   images: nil,
-  json:   nil
+  json:   nil,
+  user:   nil,
+  limit:  nil
 )
 
 OptionParser.new do |opts|
@@ -27,8 +29,8 @@ OptionParser.new do |opts|
     options.user = user
   end
 
-  opts.on('-lLIMIT', '--limit=LIMIT', "Limit for the number of images to import") do |user|
-    options.user = user
+  opts.on('-lLIMIT', '--limit=LIMIT', "Limit for the number of images to import") do |limit|
+    options.limit = limit.to_i
   end
 
   opts.on_tail("-h", "--help", "Show this message") do
@@ -55,11 +57,14 @@ metadata_by_filename = metadata.inject({}) do |memo, entry|
   memo
 end
 
+count = 0
 errors = []
 File.open options.images, 'rb' do |file|
   Zlib::GzipReader.wrap file do |gz|
     Gem::Package::TarReader.new gz do |tar|
       tar.each do |entry|
+        break if options.limit && count == options.limit
+
         filename = entry.full_name
         ext = filename.split('.').last
 
@@ -84,6 +89,7 @@ File.open options.images, 'rb' do |file|
                          user: user
 
         print '.'
+        count += 1
       end
     end
   end
