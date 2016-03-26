@@ -2,14 +2,19 @@
   Gifs
 
 - content_for :header do
-  %h1.title Gifs
+  %h1.title.is-inline Gifs
+
+  %form.is-pulled-right.is-inline{ action: '/gifs/search', method: :get }
+    %p.control.is-grouped
+      %input.input{ type: :text, placeholder: 'Search Gifs' }
+      %button.button Search
 
 - content_for :body do
   %section.section
     .container
-      .gif-columns{ style: "-webkit-column-count: 4; -webkit-column-gap: 2em;" }
+      .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
         - @gifs.each do |gif|
-          .gif{ style: "padding-bottom: 2em; -webkit-column-break-inside: avoid;" }
+          .gif{ style: "padding-bottom: 2em; margin-bottom: auto; margin-left: auto; margin-right: auto; " }
             .card
               .card-image
                 %figure.image.is-4by3
@@ -30,3 +35,18 @@
                     .media-content
                       %h5.title.is-5= gif[:file]
                   .content
+
+      .tabs.is-fullwidth
+        %ul
+          %li{ class: [ ('is-disabled' unless @pagination[:before]) ] }
+            %a{ href: "?before=#{ @pagination[:before] }" }
+              %i.fa.fa-angle-left
+              Previous
+          %li>
+            %a{ href: "#top" }
+              %i.fa.fa-angle-up
+              Top
+          %li{ class: [ ('is-disabled' unless @pagination[:after]) ] }
+            %a{ href: "?after=#{ @pagination[:after] }" }
+              Next
+              %i.fa.fa-angle-right
