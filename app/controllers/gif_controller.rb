@@ -1,11 +1,15 @@
 class GifController < ApplicationController
+  get '/gifs*' do
+    pass if Feature.by_name(:gifs, namespace: :public).enabled?
+  end
+
   get '/gifs' do
     @gif_names = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*.gif') ].map do |img|
       img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
     end
 
-    @gif_data = Gif.where(file_key: @gif_names).inject({}) do |memo, gif|
-      memo[gif.file_key] = gif
+    @gif_data = Gif.where(filename: @gif_names).inject({}) do |memo, gif|
+      memo[gif.filename] = gif
       memo
     end
 

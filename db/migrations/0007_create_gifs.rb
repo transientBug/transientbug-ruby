@@ -4,12 +4,15 @@ Sequel.migration do
     create_table :gifs do
       primary_key :id
 
-      String :file_key, unique: true, index: true, null: false
+      String :filename,   unique: true, index: true, null: false
+      String :short_code, unique: true, index: true, null: false
 
       String :title
       column :tags, 'text[]'
 
       foreign_key :user_id, :users, index: true
+
+      TrueClass :enabled, default: true, index: true
 
       DateTime :created_at
       DateTime :updated_at
