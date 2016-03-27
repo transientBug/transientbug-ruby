@@ -20,40 +20,35 @@
             .card
               .card-image
                 %figure.image.is-4by3
-                  %a{ href: "/images/gifs/#{ gif[:file] }" }
-                    %img{ src: "/images/gifs/#{ gif[:file] }", style: "height: 100%;" }
+                  %a{ href: "/images/gifs/#{ gif.filename }" }
+                    %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
               .card-content
-                - if gif[:data].present?
-                  .media
-                    .media-content
-                      %a{ href: "/gif/#{ gif[:data].short_code }" }
-                        %h5.title.is-5= gif[:data].title
-                      %a{ href: "/gif/#{ gif[:data].short_code }" }
-                        %p.subtitle.is-6= gif[:file]
-                  .content
-                    - gif[:data].tags.each do |tag|
-                      %a{ href: "/gifs/search?q=#{ tag }" }
-                        %span.tag= tag
-                - else
-                  .media
-                    .media-content
-                      %a{ href: "/gif/#{ gif[:file] }" }
-                        %h5.title.is-5= gif[:file]
-                  .content
+                .media
+                  .media-content
+                    %a{ href: "/gif/#{ gif.short_code }" }
+                      %h5.title.is-5= gif.title
+                    %a{ href: "/gif/#{ gif.short_code }" }
+                      %p.subtitle.is-6= gif.filename
+                .content
+                  - gif.tags.each do |tag|
+                    %a{ href: "/gifs/search?q=#{ tag }" }
+                      %span.tag= tag
 
       .tabs.is-fullwidth
         %ul
           %li
-            - if @pagination[:before]
-              %a{ href: "?before=#{ @pagination[:before] }" }
+            - unless @gifs.first_page?
+              - prev_params = { page: @gifs.previous_page, per_page: @gifs.per_page }.compact.to_query
+              %a{ href: "?#{ prev_params }" }
                 %i.fa.fa-angle-left
                 Previous
-          %li>
+          %li
             %a{ href: "#top" }
               %i.fa.fa-angle-up
               Top
           %li
-            - if @pagination[:after]
-              %a{ href: "?after=#{ @pagination[:after] }" }
+            - unless @gifs.last_page?
+              - next_params = { page: @gifs.next_page, per_page: @gifs.per_page }.compact.to_query
+              %a{ href: "?#{ next_params }" }
                 Next
                 %i.fa.fa-angle-right
