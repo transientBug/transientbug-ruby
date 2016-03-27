@@ -33,3 +33,25 @@
               .media-content
                 %h5.title.is-5= @gif[:file]
             .content
+
+  - if logged_in? and current_user.can?(resource: Feature.by_name(:gifs, namespace: :public), action: :edit)
+    %section.section
+      .container
+        %h1.title Edit
+        %form{ method: :post, enctype: "multipart/form-data" }
+          %label.label Title
+          .control
+            %input.input{ type: :text, placeholder: 'Title', name: :title, value: @gif[:data]&.title }
+
+          %label.label Tags
+          .control
+            %input.input{ type: :text, placeholder: 'Tags', name: :tags, value: @gif[:data]&.tags.join(', ') }
+
+          .control
+            %label.checkbox
+              %input{ type: :checkbox, name: :enabled, checked: (true if @gif[:data]&.enabled?) }
+                Enabled?
+
+          .control
+            %button.button.is-inline.is-pulled-right.is-primary
+              Update

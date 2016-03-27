@@ -136,16 +136,109 @@ class GifController < ApplicationController
     haml :'gifs/view'
   end
 
+  post '/gif/:id' do
+    authenticate!
+    authorize!(resource: Feature.by_name(:gifs, namespace: :public), action: :edit)
+
+    id = params[:id]
+
+    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+      filename = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
+      short_code = filename.split '.'
+      short_code.pop
+
+      { short_code: short_code.join('.'), filename: filename }
+    end
+
+    gif = filename_short_code.find do |hash|
+      hash[:filename] == id || hash[:short_code] == id
+    end
+
+    unless gif
+      flash[:error] = "That gif does not exist"
+      redirect to('/gifs')
+    end
+
+    gif_metadata = Gif.find_or_create filename: gif[:filename] do |img|
+      img.short_code = gif[:short_code]
+      img.user = current_user
+    end
+
+    tags = params[:tags].split(',').map{ |e| e.strip }.uniq
+    enabled = params[:enabled] || false
+
+    gif_metadata.update title: params[:title], tags: tags, enabled: enabled
+
+    redirect to("/gif/#{ id }")
+  end
+
   patch '/gif/:id' do
     authenticate!
     authorize!(resource: Feature.by_name(:gifs, namespace: :public), action: :edit)
 
-    redirect to("/gifs/#{ id }")
+    id = params[:id]
+
+    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+      filename = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
+      short_code = filename.split '.'
+      short_code.pop
+
+      { short_code: short_code.join('.'), filename: filename }
+    end
+
+    gif = filename_short_code.find do |hash|
+      hash[:filename] == id || hash[:short_code] == id
+    end
+
+    unless gif
+      flash[:error] = "That gif does not exist"
+      redirect to('/gifs')
+    end
+
+    gif_metadata = Gif.find_or_create filename: gif[:filename] do |img|
+      img.short_code = gif[:short_code]
+      img.user = current_user
+    end
+
+    tags = params[:tags].split(',').map{ |e| e.strip }.uniq
+    enabled = params[:enabled] || false
+
+    gif_metadata.update title: params[:title], tags: tags, enabled: enabled
+
+    redirect to("/gif/#{ id }")
   end
 
   delete '/gif/:id' do
     authenticate!
     authorize!(resource: Feature.by_name(:gifs, namespace: :public), action: :delete)
+
+    id = params[:id]
+
+    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+      filename = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
+      short_code = filename.split '.'
+      short_code.pop
+
+      { short_code: short_code.join('.'), filename: filename }
+    end
+
+    gif = filename_short_code.find do |hash|
+      hash[:filename] == id || hash[:short_code] == id
+    end
+
+    unless gif
+      flash[:error] = "That gif does not exist"
+      redirect to('/gifs')
+    end
+
+    gif_metadata = Gif.find_or_create filename: gif[:filename] do |img|
+      img.short_code = gif[:short_code]
+      img.user = current_user
+    end
+
+    enabled = params[:enabled] || false
+
+    gif_metadata.update enabled: enabled
 
     redirect to('/gifs')
   end
