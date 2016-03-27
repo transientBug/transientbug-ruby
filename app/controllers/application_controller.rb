@@ -41,5 +41,5 @@ class ApplicationController < Sinatra::Base
     env["rack.errors"] = error_logger
   end
 
-  helpers AuthenticationHelper, FlashHelper, ReactHelper
+  helpers PartialHelper, AuthenticationHelper, FlashHelper, ReactHelper
 end

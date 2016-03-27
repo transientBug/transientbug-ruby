@@ -141,11 +141,11 @@ class GifController < ApplicationController
       short_code = filename.split '.'
       short_code.pop
 
-      { short_code: short_code.join('.'), filename: filename }
+      OpenStruct.new short_code: short_code.join('.'), filename: filename
     end
 
     gif = filename_short_code.find do |hash|
-      hash[:filename] == id || hash[:short_code] == id
+      hash.filename == id || hash.short_code == id
     end
 
     unless gif
@@ -153,19 +153,16 @@ class GifController < ApplicationController
       redirect to('/gifs')
     end
 
-    gif = gif[:filename]
-
-    gif_metadata = Gif.find filename: gif
+    gif_metadata = Gif.find filename: gif.filename
 
     if gif_metadata&.disabled? && !current_user.can?(resource: Feature.by_name(:gifs, namespace: :public), action: :delete)
       flash[:error] = "That gif does not exist"
       redirect to('/gifs')
+    else
+      gif = gif_metadata
     end
 
-    @gif = {
-      file: gif,
-      data: gif_metadata
-    }
+    @gif = gif
 
     haml :'gifs/view'
   end

@@ -17,22 +17,7 @@
       .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
         - @gifs.each do |gif|
           .gif{ style: "padding-bottom: 2em; margin-bottom: auto; margin-left: auto; margin-right: auto; " }
-            .card
-              .card-image
-                %figure.image.is-4by3
-                  %a{ href: "/images/gifs/#{ gif.filename }" }
-                    %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
-              .card-content
-                .media
-                  .media-content
-                    %a{ href: "/gif/#{ gif.short_code }" }
-                      %h5.title.is-5= gif.title
-                    %a{ href: "/gif/#{ gif.short_code }" }
-                      %p.subtitle.is-6= gif.filename
-                .content
-                  - gif.tags.each do |tag|
-                    %a{ href: "/gifs/search?q=#{ tag }" }
-                      %span.tag= tag
+            = partial 'gifs/gif_card', locals: { gif: gif }
 
       .tabs.is-fullwidth
         %ul

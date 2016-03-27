@@ -1,9 +1,9 @@
 - content_for :title do
-  Gif - #{ @gif[:file] }
+  Gif - #{ @gif.short_code }
 
 - content_for :header do
   %h1.title.is-inline Gif
-  %h5.subtitle.is-inline= @gif[:file]
+  %h5.subtitle.is-inline= @gif.short_code
 
   %form.is-pulled-right.is-inline{ action: '/gifs/search', method: :get }
     %p.control.is-grouped
@@ -16,40 +16,24 @@
   %section.section
     .container
       .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
-        .gif{ style: "padding-bottom: 2em; margin-bottom: auto; margin-left: auto; margin-right: auto; " }
-          %a{ href: "/images/gifs/#{ @gif[:file] }" }
-            %img{ src: "/images/gifs/#{ @gif[:file] }" }
-          - if @gif[:data].present?
-            .media
-              .media-content
-                %h5.title.is-5= @gif[:data].title
-                %p.subtitle.is-6= @gif[:file]
-            .content
-              - @gif[:data].tags.each do |tag|
-                %a{ href: "/gifs/search?q=#{ tag }" }
-                  %span.tag= tag
-          - else
-            .media
-              .media-content
-                %h5.title.is-5= @gif[:file]
-            .content
+        = partial 'gifs/gif_card', locals: { gif: @gif }
 
   - if logged_in? and current_user.can?(resource: Feature.by_name(:gifs, namespace: :public), action: :edit)
     %section.section
       .container
-        %h1.title Edit
+        %h1.title Edit Gif
         %form{ method: :post, enctype: "multipart/form-data" }
           %label.label Title
           .control
-            %input.input{ type: :text, placeholder: 'Title', name: :title, value: @gif[:data]&.title }
+            %input.input{ type: :text, placeholder: 'Title', name: :title, value: @gif&.title }
 
           %label.label Tags
           .control
-            %input.input{ type: :text, placeholder: 'Tags', name: :tags, value: @gif[:data]&.tags.join(', ') }
+            %input.input{ type: :text, placeholder: 'Tags', name: :tags, value: @gif&.tags.join(', ') }
 
           .control
             %label.checkbox
-              %input{ type: :checkbox, name: :enabled, checked: (true if @gif[:data]&.enabled?) }
+              %input{ type: :checkbox, name: :enabled, checked: (true if @gif&.enabled?) }
                 Enabled?
 
           .control

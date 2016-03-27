@@ -10,31 +10,18 @@
       %button.button Search
 
 - content_for :body do
-  %section.section
-    .container
-      - if @tags
+  - if @tags
+    %section.section
+      .container
+        %h1.title Tags
         .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
-          - @tags.each do |tag|
-            %a{ href: "/gifs/search?q=#{ tag }" }
-              %span.tag= tag
+          = partial 'gifs/tag_list', locals: { tags: tags }
 
-  %section.section
-    .container
-      - if @gifs
+  - if @gifs
+    %section.section
+      .container
+        %h1.title Gifs
         .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
           - @gifs.each do |gif|
             .gif{ style: "padding-bottom: 2em; margin-bottom: auto; margin-left: auto; margin-right: auto; " }
-              .card
-                .card-image
-                  %figure.image.is-4by3
-                    %a{ href: "/images/gifs/#{ gif.filename }" }
-                      %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
-                .card-content
-                  .media
-                    .media-content
-                      %h5.title.is-5= gif.title
-                      %p.subtitle.is-6= gif.filename
-                  .content
-                    - gif.tags.each do |tag|
-                      %a{ href: "/gifs/search?q=#{ tag }" }
-                        %span.tag= tag
+              = partial 'gifs/gif_card', locals: { gif: gif }
