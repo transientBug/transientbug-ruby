@@ -15,7 +15,7 @@
       - if @tags
         .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
           - @tags.each do |tag|
-            %a{ href: "/gifs/tag/#{ tag }" }
+            %a{ href: "/gifs/search?q=#{ tag }" }
               %span.tag= tag
 
   %section.section
