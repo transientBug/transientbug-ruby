@@ -7,15 +7,26 @@
 - content_for :body do
   %section.section
     .container
-      %form{ method: :post }
-        %label.label Title
-        .control
-          %input.input{ type: :text, placeholder: 'Title' }
+      .columns
+        .column.is-half.is-offset-quarter
+          %form{ method: :post, enctype: "multipart/form-data" }
+            %label.label Title
+            .control
+              %input.input{ type: :text, placeholder: 'Title', name: :title }
 
-        %label.label File
-        .control
-          %input.input{ type: :file }
+            %label.label File
+            .control
+              %input.input{ type: :file, name: :file }
 
-        .control
-          %button.button.is-inline.is-pulled-right.is-primary
-            Add
+            %label.label Tags
+            .control
+              %input.input{ type: :text, placeholder: 'Tags', name: :tags }
+
+            .control
+              %label.checkbox
+                %input{ type: :checkbox, name: :enabled, checked: true }
+                  Enabled?
+
+            .control
+              %button.button.is-inline.is-pulled-right.is-primary
+                Add

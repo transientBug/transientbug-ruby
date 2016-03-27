@@ -26,9 +26,20 @@
                 %a{ href: '/' }
                   Home
 
+              %span.header-item
+                %a{ href: '/gifs' }
+                  Gifs
+
             .header-center
 
             .header-right
+              %span.header-item
+                - if logged_in?
+                  %a{ href: '/logout' }
+                    Logout
+                - else
+                  %a{ href: '/login' }
+                    Login
 
       .hero-content
         .container

@@ -8,10 +8,19 @@ module AuthenticationHelper
   end
 
   def authenticate!
-    unless logged_in?
-      session[:return_path] = request.path
-      flash[:error] = "You need to login to access that"
-      halt redirect(to('/login'))
-    end
+    return if logged_in?
+
+    session[:return_path] = request.path
+    flash[:error]         = "You need to login to access that"
+
+    halt redirect(to('/login'))
+  end
+
+  def authorize! resource:, action: nil
+    return if current_user.can? resource: resource, action: action
+
+    flash[:error] = "You are not authorized to do that"
+
+    half redirect(to('/'))
   end
 end

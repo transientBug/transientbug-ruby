@@ -13,6 +13,6 @@ class Feature < Sequel::Model
   end
 
   def disabled?
-    !enabled?
+    enabled == false
   end
 end
