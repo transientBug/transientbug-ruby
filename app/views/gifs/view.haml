@@ -9,7 +9,7 @@
     %p.control.is-grouped
       - if logged_in? && current_user.can?(action: :create, resource: Feature.by_name(:gifs, namespace: :public))
         %a.button{ href: '/gifs/new' } Upload
-      %input.input{ type: :text, placeholder: 'Search Gifs' }
+      %input.input{ type: :text, name: :q, placeholder: 'Search Gifs' }
       %button.button Search
 
 - content_for :body do
@@ -26,7 +26,7 @@
                 %p.subtitle.is-6= @gif[:file]
             .content
               - @gif[:data].tags.each do |tag|
-                %a{ href: "/gifs/tag/#{ tag }" }
+                %a{ href: "/gifs/search?q=#{ tag }" }
                   %span.tag= tag
           - else
             .media

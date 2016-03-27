@@ -1,6 +1,7 @@
 class GifController < ApplicationController
   include Pagination
 
+  # Feature flipper for all of Gifs
   get '/gif*' do
     if Feature.by_name(:gifs, namespace: :public).disabled?
       haml :disabled
@@ -88,11 +89,14 @@ class GifController < ApplicationController
   end
 
   get '/gifs/search' do
-    haml :'gifs/search'
-  end
+    query = params[:q]
 
-  get '/gifs/tags' do
-    haml :'gifs/tags'
+    @tags = DB[:tags].where{ tag.like "%#{ query }%" }.map{ |e| e[:tag] }
+    if query.present?
+      @gifs = Gif.where{ self.|( title.like("%#{ query }%"), tags.pg_array.contains([query]) ) }
+    end
+
+    haml :'gifs/search'
   end
 
   get '/gif/:id' do

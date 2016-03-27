@@ -6,10 +6,18 @@
     %p.control.is-grouped
       - if logged_in? && current_user.can?(action: :create, resource: Feature.by_name(:gifs, namespace: :public))
         %a.button{ href: '/gifs/new' } Upload
-      %input.input{ type: :text, placeholder: 'Search Gifs', value: params[:q] }
+      %input.input{ type: :text, name: :q, placeholder: 'Search Gifs', value: params[:q] }
       %button.button Search
 
 - content_for :body do
+  %section.section
+    .container
+      - if @tags
+        .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
+          - @tags.each do |tag|
+            %a{ href: "/gifs/tag/#{ tag }" }
+              %span.tag= tag
+
   %section.section
     .container
       - if @gifs
@@ -19,37 +27,14 @@
               .card
                 .card-image
                   %figure.image.is-4by3
-                    %a{ href: "/images/gifs/#{ gif[:file] }" }
-                      %img{ src: "/images/gifs/#{ gif[:file] }", style: "height: 100%;" }
+                    %a{ href: "/images/gifs/#{ gif.filename }" }
+                      %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
                 .card-content
-                  - if gif[:data].present?
-                    .media
-                      .media-content
-                        %h5.title.is-5= gif[:data].title
-                        %p.subtitle.is-6= gif[:file]
-                    .content
-                      - gif[:data].tags.each do |tag|
-                        %a{ href: "/gifs/tag/#{ tag }" }
-                          %span.tag= tag
-                  - else
-                    .media
-                      .media-content
-                        %h5.title.is-5= gif[:file]
-                    .content
-
-        .tabs.is-fullwidth
-          %ul
-            %li
-              - if @pagination[:before]
-                %a{ href: "?before=#{ @pagination[:before] }&q=#{ params[:q] }" }
-                  %i.fa.fa-angle-left
-                  Previous
-            %li>
-              %a{ href: "#top" }
-                %i.fa.fa-angle-up
-                Top
-            %li
-              - if @pagination[:after]
-                %a{ href: "?after=#{ @pagination[:after] }&q=#{ params[:q] }" }
-                  Next
-                  %i.fa.fa-angle-right
+                  .media
+                    .media-content
+                      %h5.title.is-5= gif.title
+                      %p.subtitle.is-6= gif.filename
+                  .content
+                    - gif.tags.each do |tag|
+                      %a{ href: "/gifs/search?q=#{ tag }" }
+                        %span.tag= tag

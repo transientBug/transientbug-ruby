@@ -18,5 +18,7 @@ Sequel.migration do
       DateTime :updated_at
     end
 
+    create_view :tags, "SELECT DISTINCT unnest(tags) as tag FROM gifs"
+
   end
 end
