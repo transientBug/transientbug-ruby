@@ -14,6 +14,6 @@ module Permits
   end
 
   def can? resource:, action: nil
-    Permit.can? user: self, resource: resource, action: action
+    Permit.can? user: self, resource: resource, action: action.to_s
   end
 end

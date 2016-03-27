@@ -1,0 +1,21 @@
+- content_for :title do
+  Upload a New Gif
+
+- content_for :header do
+  %h1.title.is-inline Upload a Gif
+
+- content_for :body do
+  %section.section
+    .container
+      %form{ method: :post }
+        %label.label Title
+        .control
+          %input.input{ type: :text, placeholder: 'Title' }
+
+        %label.label File
+        .control
+          %input.input{ type: :file }
+
+        .control
+          %button.button.is-inline.is-pulled-right.is-primary
+            Add
