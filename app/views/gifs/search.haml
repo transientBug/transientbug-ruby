@@ -2,26 +2,22 @@
   Search Gifs
 
 - content_for :header do
-  %form.is-centered.is-inline{ action: '/gifs/search', method: :get }
-    %p.control.is-grouped
-      - if logged_in? && current_user.can?(action: :create, resource: Feature.by_name(:gifs, namespace: :public))
-        %a.button{ href: '/gifs/new' } Upload
-      %input.input{ type: :text, name: :q, placeholder: 'Search Gifs', value: params[:q] }
-      %button.button Search
+  = partial 'gifs/search'
 
 - content_for :body do
-  - if @tags
-    %section.section
-      .container
-        %h1.title Tags
-        .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
-          = partial 'gifs/tag_list', locals: { tags: tags }
+  %section.section
+    .container
+      %h1.title Tags
+      - if @tags.any?
+        = partial 'gifs/tag_list', locals: { tags: @tags }
+      - else
+        %p No matching tags
 
-  - if @gifs
-    %section.section
-      .container
-        %h1.title Gifs
-        .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
-          - @gifs.each do |gif|
-            .gif{ style: "padding-bottom: 2em; margin-bottom: auto; margin-left: auto; margin-right: auto; " }
-              = partial 'gifs/gif_card', locals: { gif: gif }
+  %section.section
+    .container
+      %h1.title Gifs
+      - if @gifs.any?
+        = partial 'gifs/gif_list', locals: { gifs: @gifs }
+        = partial 'gifs/pagination', locals: { gifs: @gifs }
+      - else
+        %p No matching gifs

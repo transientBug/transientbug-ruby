@@ -13,6 +13,4 @@
           %p.subtitle.is-6= gif.filename
 
     .content
-      - gif.tags.each do |tag|
-        %a{ href: "/gifs/search?q=#{ tag }" }
-          %span.tag= tag
+      = partial 'gifs/tag_list', locals: { tags: gif.tags }

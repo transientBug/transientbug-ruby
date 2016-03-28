@@ -5,12 +5,8 @@
   %h1.title.is-inline Gif
   %h5.subtitle.is-inline= @gif.short_code
 
-  %form.is-pulled-right.is-inline{ action: '/gifs/search', method: :get }
-    %p.control.is-grouped
-      - if logged_in? && current_user.can?(action: :create, resource: Feature.by_name(:gifs, namespace: :public))
-        %a.button{ href: '/gifs/new' } Upload
-      %input.input{ type: :text, name: :q, placeholder: 'Search Gifs' }
-      %button.button Search
+  .is-pulled-right.is-inline
+    = partial 'gifs/search'
 
 - content_for :body do
   %section.section

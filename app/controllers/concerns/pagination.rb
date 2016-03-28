@@ -33,7 +33,7 @@ class PagedPaginatedContainer
   def last_page?
     return @data.last_page? if @data.respond_to? :last_page?
 
-    @pagination[:last_page]
+    @pagination[:last_page?]
   end
 
   def current_page
@@ -90,8 +90,8 @@ module Pagination
     offset_start    = 0 if offset_start < 0
     offset_end      = offset_start + per_page - 1 # Zero index, yo
 
-    is_last_page    = offset_end >= total
     is_first_page   = offset_start <= 0
+    is_last_page    = offset_end >= total
 
     paginated_array = array[offset_start..offset_end]
 

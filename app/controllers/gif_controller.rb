@@ -63,7 +63,7 @@ class GifController < ApplicationController
 
     @gifs = gifs
 
-    haml :'gifs/index'
+    haml :'gifs/disabled'
   end
 
   get '/gifs/new' do
@@ -127,7 +127,8 @@ class GifController < ApplicationController
     if query.present?
       # Sequel is awesome like this.
       # http://sequel.jeremyevans.net/rdoc-plugins/files/lib/sequel/extensions/pg_ops_rb.html
-      @gifs = Gif.where{ self.|( title.like("%#{ query }%"), tags.pg_array.contains([query]) ) }
+      @gifs = paginate Gif.where{ self.|( title.like("%#{ query }%"), tags.pg_array.contains([query]) ) }
+
     end
 
     haml :'gifs/search'

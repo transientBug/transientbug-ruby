@@ -1,0 +1,6 @@
+%form{ action: '/gifs/search', method: :get }
+  %p.control.is-grouped
+    - if logged_in? && current_user.can?(action: :create, resource: Feature.by_name(:gifs, namespace: :public))
+      %a.button{ href: '/gifs/new' } Upload
+    %input.input{ type: :text, name: :q, placeholder: 'Search Gifs', value: params['q'] }
+    %button.button Search
