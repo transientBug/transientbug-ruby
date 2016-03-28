@@ -1,0 +1,14 @@
+- content_for :title do
+  Gifs
+
+- content_for :header do
+  %h1.title.is-inline Gifs
+
+  .is-pulled-right.is-inline
+    = partial 'gifs/search'
+
+- content_for :body do
+  %section.section
+    .container
+      = partial 'gifs/gif_list', locals: { gifs: @gifs }
+      = partial 'gifs/pagination', locals: { gifs: @gifs }

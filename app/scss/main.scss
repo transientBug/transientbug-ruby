@@ -2,3 +2,14 @@ $fa-font-path: "~font-awesome/fonts";
 @import "~font-awesome/scss/font-awesome";
 
 @import "~bulma/bulma";
+
+.gif-columns {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.gif {
+  padding-bottom: 2em;
+}

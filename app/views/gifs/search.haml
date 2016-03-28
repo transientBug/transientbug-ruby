@@ -1,0 +1,23 @@
+- content_for :title do
+  Search Gifs
+
+- content_for :header do
+  = partial 'gifs/search'
+
+- content_for :body do
+  %section.section
+    .container
+      %h1.title Tags
+      - if @tags.any?
+        = partial 'gifs/tag_list', locals: { tags: @tags }
+      - else
+        %p No matching tags
+
+  %section.section
+    .container
+      %h1.title Gifs
+      - if @gifs.any?
+        = partial 'gifs/gif_list', locals: { gifs: @gifs }
+        = partial 'gifs/pagination', locals: { gifs: @gifs }
+      - else
+        %p No matching gifs

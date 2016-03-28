@@ -1,0 +1,37 @@
+- content_for :title do
+  Gif - #{ @gif.short_code }
+
+- content_for :header do
+  %h1.title.is-inline Gif
+  %h5.subtitle.is-inline= @gif.short_code
+
+  .is-pulled-right.is-inline
+    = partial 'gifs/search'
+
+- content_for :body do
+  %section.section
+    .container
+      .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
+        = partial 'gifs/gif_card', locals: { gif: @gif }
+
+  - if logged_in? and current_user.can?(resource: Feature.by_name(:gifs, namespace: :public), action: :edit)
+    %section.section
+      .container
+        %h1.title Edit Gif
+        %form{ method: :post, enctype: "multipart/form-data" }
+          %label.label Title
+          .control
+            %input.input{ type: :text, placeholder: 'Title', name: :title, value: @gif&.title }
+
+          %label.label Tags
+          .control
+            %input.input{ type: :text, placeholder: 'Tags', name: :tags, value: @gif&.tags.join(', ') }
+
+          .control
+            %label.checkbox
+              %input{ type: :checkbox, name: :enabled, checked: (true if @gif&.enabled?) }
+                Enabled?
+
+          .control
+            %button.button.is-inline.is-pulled-right.is-primary
+              Update

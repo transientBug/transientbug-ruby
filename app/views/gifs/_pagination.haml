@@ -1,0 +1,20 @@
+.tabs.is-fullwidth
+  %ul
+    %li
+      - unless gifs.first_page?
+        - prev_params = params.select{ |p| p.kind_of? String }.merge({ page: gifs.previous_page, per_page: gifs.per_page }.deep_stringify_keys).compact.to_query
+        %a{ href: "?#{ prev_params }" }
+          %i.fa.fa-angle-left
+          Previous
+
+    %li
+      %a{ href: "#top" }
+        %i.fa.fa-angle-up
+        Top
+
+    %li
+      - unless gifs.last_page?
+        - next_params = params.select{ |p| p.kind_of? String }.merge({ page: gifs.next_page, per_page: gifs.per_page }.deep_stringify_keys).compact.to_query
+        %a{ href: "?#{ next_params }" }
+          Next
+          %i.fa.fa-angle-right

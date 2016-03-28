@@ -57,6 +57,8 @@ metadata_by_filename = metadata.inject({}) do |memo, entry|
   memo
 end
 
+FileUtils.mkdir_p AshFrame.root.join('public', 'images', 'gifs')
+
 count = 0
 errors = []
 File.open options.images, 'rb' do |file|
@@ -84,7 +86,7 @@ File.open options.images, 'rb' do |file|
                          short_code: meta['short_code'],
                          title: meta['title'],
                          tags: tags,
-                         enabled: meta['disable'],
+                         enabled: !meta['disable'],
                          created_at: Time.at(meta['created']),
                          user: user
 

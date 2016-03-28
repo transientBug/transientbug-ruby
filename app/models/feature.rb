@@ -11,4 +11,8 @@ class Feature < Sequel::Model
       find_or_create name: n.to_s, namespace: namespace.to_s
     end
   end
+
+  def disabled?
+    enabled == false
+  end
 end

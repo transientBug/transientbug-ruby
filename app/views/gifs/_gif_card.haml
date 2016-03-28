@@ -1,0 +1,16 @@
+.card
+  .card-image
+    %figure.image.is-4by3
+      %a{ href: "/images/gifs/#{ gif.filename }" }
+        %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
+
+  .card-content
+    .media
+      .media-content
+        %a{ href: "/gif/#{ gif.short_code }" }
+          %h5.title.is-5= gif.title
+        %a{ href: "/gif/#{ gif.short_code }" }
+          %p.subtitle.is-6= gif.filename
+
+    .content
+      = partial 'gifs/tag_list', locals: { tags: gif.tags }

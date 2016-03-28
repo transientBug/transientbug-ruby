@@ -1,0 +1,20 @@
+- content_for :title do
+  Disabled Gifs
+
+- content_for :header do
+  %h1.title.is-inline Disabled Gifs
+
+  .is-pulled-right.is-inline
+    = partial 'gifs/search'
+
+- content_for :body do
+  %section.section
+    .container
+      .message.is-warning
+        .message-header
+          Heads Up
+        .message-body
+          These gifs are disabled, so you can't search them, and their information is not publically visible.
+
+      = partial 'gifs/gif_list', locals: { gifs: @gifs }
+      = partial 'gifs/pagination', locals: { gifs: @gifs }
