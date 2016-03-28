@@ -96,7 +96,9 @@ class GifController < ApplicationController
 
     ext = params[:file][:filename].split('.').last
     filename = [ short_code, ext ].join '.'
-    path = AshFrame.root.join 'public', 'images', 'gifs', filename
+
+    output_path = AshFrame.root.join 'public', 'images', 'gifs', filename
+    first_frame_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', filename
 
     gif = Gif.new title: params[:title],
                   tags: tags,
@@ -111,8 +113,17 @@ class GifController < ApplicationController
       halt
     end
 
-    File.open path, 'wb' do |f|
+    Tempfile.open short_code do |f|
+      f.binmode
       f.write params[:file][:tempfile].read
+      f.rewind
+
+      mm_gif = MiniMagick::Image.open f.path
+      mm_gif.frames.first.write first_frame_path
+
+      f.rewind
+
+      output_path.write f.read
     end
 
     gif.save
@@ -124,6 +135,7 @@ class GifController < ApplicationController
     query = params[:q]
 
     @tags = DB[:tags].where{ tag.like "%#{ query }%" }.map{ |e| e[:tag] }
+
     if query.present?
       # Sequel is awesome like this.
       # http://sequel.jeremyevans.net/rdoc-plugins/files/lib/sequel/extensions/pg_ops_rb.html
