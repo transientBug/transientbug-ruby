@@ -2,7 +2,10 @@
   .card-image
     %figure.image.is-4by3
       %a{ href: "/images/gifs/#{ gif.filename }" }
-        %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
+        - if pausable
+          = react_component 'FirstFrameGif', filename: gif.filename
+        - else
+          %img{ src: "/images/gifs/#{ gif.filename }", style: "height: 100%;" }
 
   .card-content
     .media
