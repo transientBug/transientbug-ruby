@@ -7,95 +7,138 @@ require 'ostruct'
 require 'rubygems/package'
 require 'zlib'
 
-options = OpenStruct.new(
-  images: nil,
-  json:   nil,
-  user:   nil,
-  limit:  nil
-)
-
-OptionParser.new do |opts|
-  opts.banner = "Usage: importer -j <json> -i <images> -u <user>"
-
-  opts.on('-iIMAGES', '--images=IMAGES', "Images tar") do |images|
-    options.images = images
+class Importer
+  def initialize(metadata:, archive:, user:)
+    @metadata     = metadata
+    @archive      = archive
+    @user_id_name = user
   end
 
-  opts.on('-jJSON', '--json=JSON', "Image metadata JSON") do |json|
-    options.json = json
+  def user
+    @user ||= User.find{ self.|(id =~ @user_id_name.to_i, username.ilike("%#{ @user_id_name }%")) }
   end
 
-  opts.on('-uUSER', '--user=USER', "User ID or username who should own the images") do |user|
-    options.user = user
-  end
-
-  opts.on('-lLIMIT', '--limit=LIMIT', "Limit for the number of images to import") do |limit|
-    options.limit = limit.to_i
-  end
-
-  opts.on_tail("-h", "--help", "Show this message") do
-    puts opts
-    exit
-  end
-
-  opts.on_tail("--version", "Show version") do
-    puts '0.0.1'
-    exit
-  end
-end.parse! ARGV
-
-user = User.find{ self.|(id =~ options.user.to_i, username.ilike("%#{ options.user }%")) }
-
-metadata = []
-
-File.open options.json, 'r' do |file|
-  metadata = JSON.parse(file.read)
-end
-
-metadata_by_filename = metadata.inject({}) do |memo, entry|
-  memo[entry['filename']] = entry
-  memo
-end
-
-FileUtils.mkdir_p AshFrame.root.join('public', 'images', 'gifs')
-
-count = 0
-errors = []
-File.open options.images, 'rb' do |file|
-  Zlib::GzipReader.wrap file do |gz|
-    Gem::Package::TarReader.new gz do |tar|
-      tar.each do |entry|
-        break if options.limit && count == options.limit
-
-        filename = entry.full_name
-        ext = filename.split('.').last
-
-        unless metadata_by_filename.has_key? filename
-          errors << "Image #{ filename } not in image metadata, skipping"
-          next
-        end
-
-        meta = metadata_by_filename[filename]
-        tags = meta['tags'].map{ |tag| tag.gsub '_', ' ' }
-
-        new_filename = [ meta['short_code'], ext ].join '.'
-        new_path = AshFrame.root.join('public', 'images', 'gifs', new_filename)
-
-        new_path.write entry.read
-        Gif.create filename: new_filename,
-                         short_code: meta['short_code'],
-                         title: meta['title'],
-                         tags: tags,
-                         enabled: !meta['disable'],
-                         created_at: Time.at(meta['created']),
-                         user: user
-
-        print '.'
-        count += 1
-      end
+  def metadata_by_filename
+    @metadata_by_filename ||= @metadata.inject({}) do |memo, entry|
+      memo[entry['filename']] = entry
+      memo
     end
   end
+
+  def import_image io
+    io_filename = io.full_name
+    ext         = io_filename.split('.').last
+
+    unless metadata_by_filename.has_key? io_filename
+      fail "Image #{ io_filename } not in image metadata, skipping"
+    end
+
+    meta = metadata_by_filename[io_filename]
+    tags = meta['tags'].map{ |tag| tag.gsub '_', ' ' }
+
+    output_filename = [ meta['short_code'], ext ].join '.'
+    output_path     = AshFrame.root.join 'public', 'images', 'gifs', output_filename
+
+    first_frame_output_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', output_filename
+
+    Tempfile.open output_filename do |f|
+      f.binmode
+      f.write io.read
+      f.rewind
+
+      mm_gif = MiniMagick::Image.open f.path
+      mm_gif.frames.first.write first_frame_output_path
+
+      f.rewind
+
+      output_path.write f.read
+
+      Gif.create filename:   output_filename,
+                 short_code: meta['short_code'],
+                 title:      meta['title'],
+                 tags:       tags,
+                 enabled:    !meta['disable'],
+                 created_at: Time.at(meta['created']),
+                 user:       user
+    end
+  end
+
+  def self.import! args
+    options = OpenStruct.new(
+      images: nil,
+      json:   nil,
+      user:   nil,
+      limit:  nil
+    )
+
+    OptionParser.new do |opts|
+      opts.banner = "Usage: importer -j <json> -i <images> -u <user>"
+
+      opts.on('-iIMAGES', '--images=IMAGES', "Images tar") do |images|
+        options.images = images
+      end
+
+      opts.on('-jJSON', '--json=JSON', "Image metadata JSON") do |json|
+        options.json = json
+      end
+
+      opts.on('-uUSER', '--user=USER', "User ID or username who should own the images") do |user|
+        options.user = user
+      end
+
+      opts.on('-lLIMIT', '--limit=LIMIT', "Limit for the number of images to import") do |limit|
+        options.limit = limit.to_i
+      end
+
+      opts.on_tail("-h", "--help", "Show this message") do
+        puts opts
+        exit
+      end
+
+      opts.on_tail("--version", "Show version") do
+        puts '0.0.1'
+        exit
+      end
+    end.parse! args
+
+    metadata = []
+    File.open options.json, 'r' do |file|
+      metadata = JSON.parse(file.read)
+    end
+
+    FileUtils.mkdir_p AshFrame.root.join('public', 'images', 'gifs')
+    FileUtils.mkdir_p AshFrame.root.join('public', 'images', 'gifs', 'first')
+
+    importer = Importer.new metadata: metadata, archive: options.images, user: options.user
+
+    total_count = 0
+    success_count = 0
+    errors = []
+    File.open options.images, 'rb' do |file|
+      Zlib::GzipReader.wrap file do |gz|
+        Gem::Package::TarReader.new gz do |tar|
+          tar.each do |entry|
+            break if options.limit && total_count >= options.limit
+
+            begin
+              importer.import_image entry
+              success_count += 1
+              print '.'
+            rescue => e
+              errors << e.message
+              print 'E'
+            end
+
+            total_count += 1
+          end
+        end
+      end
+    end
+
+    puts ''
+    puts "Finished importing #{ success_count } gifs, with #{ errors.length } errors ..."
+    puts errors.join("\n")
+  end
 end
 
-puts
-puts errors
+Importer.import! ARGV if __FILE__ == $0

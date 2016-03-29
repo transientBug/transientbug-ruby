@@ -101,6 +101,7 @@ class GifController < ApplicationController
     query = params[:q]
 
     @tags = DB[:tags].where{ tag.like "%#{ query }%" }.map{ |e| e[:tag] }
+
     if query.present?
       # Sequel is awesome like this.
       # http://sequel.jeremyevans.net/rdoc-plugins/files/lib/sequel/extensions/pg_ops_rb.html

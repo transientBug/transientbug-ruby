@@ -12,7 +12,7 @@
   %section.section
     .container
       .gif-columns{ style: "display: flex; flex-flow: row wrap; justify-content: space-around; align-items: flex-start; " }
-        = partial 'gifs/gif_card', locals: { gif: @gif }
+        = partial 'gifs/gif_card', locals: { gif: @gif, pausable: false }
 
   - if logged_in? and current_user.can?(resource: Feature.by_name(:gifs, namespace: :public), action: :edit)
     %section.section

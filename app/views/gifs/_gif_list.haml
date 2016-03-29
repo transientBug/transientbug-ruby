@@ -1,4 +1,4 @@
 .gif-columns
   - gifs.each do |gif|
     .gif
-      = partial 'gifs/gif_card', locals: { gif: gif }
+      = partial 'gifs/gif_card', locals: { gif: gif, pausable: true }
