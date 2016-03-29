@@ -82,42 +82,19 @@ class GifController < ApplicationController
     tags = params[:tags].split(',').map{ |e| e.strip }.uniq
     enabled = params[:enabled] || false
 
-    taken_short_codes = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
-      name = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' ).split '.'
-      name.pop
-      name.join '.'
-    end
-
-    gen_short_code = -> { SecureRandom.hex(5).upcase }
-    short_code = gen_short_code[]
-    while taken_short_codes.include? short_code
-      short_code = gen_short_code[]
-    end
-
     ext = params[:file][:filename].split('.').last
-    filename = [ short_code, ext ].join '.'
-    path = AshFrame.root.join 'public', 'images', 'gifs', filename
+    block = Blocks::Gifs::Upload.call io_object: params[:file][:tempfile],
+                                      extension: ext,
+                                      user: current_user,
+                                      title: params[:title],
+                                      tags: tags, enabled: enabled
 
-    gif = Gif.new title: params[:title],
-                  tags: tags,
-                  enabled: enabled,
-                  short_code: short_code,
-                  filename: filename,
-                  user: current_user
-
-    unless gif.valid?
-      flash[:error] = gif.errors
-      haml :'gifs/new'
+    if block.errors.any?
+      flash[:error] = block.errors.map{ |e| e[:message] }
       halt
     end
 
-    File.open path, 'wb' do |f|
-      f.write params[:file][:tempfile].read
-    end
-
-    gif.save
-
-    redirect to("/gif/#{ filename }")
+    redirect to("/gif/#{ block.filename }")
   end
 
   get '/gifs/search' do

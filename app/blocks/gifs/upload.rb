@@ -4,6 +4,7 @@ module Blocks
       include AshFrame::Blocks::Errors
 
       require :io_object, :extension, :user, title: '', tags: [], enabled: true
+      attr_reader :filename, :short_code, :model
 
       def generate_short_code
         SecureRandom.hex(5).upcase
@@ -18,27 +19,27 @@ module Blocks
       end
 
       def logic
-        short_code = generate_short_code
+        @short_code = generate_short_code
         while taken_short_codes.include? short_code
-          short_code = generate_short_code
+          @short_code = generate_short_code
         end
 
-        filename = [ short_code, extension ].join '.'
+        @filename = [ short_code, extension ].join '.'
 
-        gif = Gif.new title:      title,
-                      tags:       tags,
-                      enabled:    enabled,
-                      short_code: short_code,
-                      filename:   filename,
-                      user:       user
+        @model = Gif.new title:      title,
+                         tags:       tags,
+                         enabled:    enabled,
+                         short_code: @short_code,
+                         filename:   @filename,
+                         user:       user
 
-        unless gif.valid?
-          add_error message: 'Gif is not valid', meta: gif.errors
+        unless @model.valid?
+          add_error message: 'Gif is not valid', meta: @model.errors
           return
         end
 
-        output_path = AshFrame.root.join 'public', 'images', 'gifs', filename
-        first_frame_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', filename
+        output_path = AshFrame.root.join 'public', 'images', 'gifs', @filename
+        first_frame_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', @filename
 
         Tempfile.open short_code do |f|
           f.binmode
@@ -53,7 +54,7 @@ module Blocks
           output_path.write f.read
         end
 
-        gif.save
+        @model.save
       end
     end
   end

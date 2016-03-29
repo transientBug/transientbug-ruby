@@ -28,7 +28,7 @@ module AshFrame
       end
 
       include ActiveSupport::Callbacks
-      define_callbacks :initialize, :run
+      define_callbacks :initialize, :logic
 
       attr_accessor :result, :namespace
 
