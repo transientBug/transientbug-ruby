@@ -41,7 +41,7 @@ class Importer
                               user: user,
                               title: meta['title'],
                               tags: tags,
-                              enabled: !meta['disabled'],
+                              enabled: !meta['disable'],
                               short_code: meta['short_code'],
                               created_at: Time.at(meta['created'])
   end
@@ -103,14 +103,14 @@ class Importer
           tar.each do |entry|
             break if options.limit && total_count >= options.limit
 
-            # begin
+            begin
               importer.import_image entry
               success_count += 1
               print '.'
-            # rescue => e
-              # errors << e.message
-              # print 'E'
-            # end
+            rescue => e
+              errors << e.message
+              print 'E'
+            end
 
             total_count += 1
           end
