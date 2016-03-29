@@ -4,7 +4,9 @@ module Blocks
       include AshFrame::Blocks::Errors
 
       require :io_object, :extension, :user, title: '', tags: [], enabled: true
-      attr_reader :filename, :short_code, :model
+      optional :short_code, :created_at
+
+      attr_reader :filename, :model
 
       def generate_short_code
         SecureRandom.hex(5).upcase
@@ -18,20 +20,25 @@ module Blocks
         end
       end
 
+      def valid_short_code?
+        @short_code.present? && !taken_short_codes.include?(@short_code)
+      end
+
       def logic
-        @short_code = generate_short_code
-        while taken_short_codes.include? short_code
+        until valid_short_code?
           @short_code = generate_short_code
         end
 
-        @filename = [ short_code, extension ].join '.'
+        @filename = [ @short_code, @extension ].join '.'
 
-        @model = Gif.new title:      title,
-                         tags:       tags,
-                         enabled:    enabled,
+        @model = Gif.new title:      @title,
+                         tags:       @tags,
+                         enabled:    @enabled,
                          short_code: @short_code,
                          filename:   @filename,
-                         user:       user
+                         user:       @user
+
+        @model.created_at = @created_at if @created_at.present?
 
         unless @model.valid?
           add_error message: 'Gif is not valid', meta: @model.errors
@@ -41,9 +48,9 @@ module Blocks
         output_path = AshFrame.root.join 'public', 'images', 'gifs', @filename
         first_frame_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', @filename
 
-        Tempfile.open short_code do |f|
+        Tempfile.open @short_code do |f|
           f.binmode
-          f.write io_object.read
+          f.write @io_object.read
           f.rewind
 
           mm_gif = MiniMagick::Image.open f.path

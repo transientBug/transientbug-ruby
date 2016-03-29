@@ -20,6 +20,11 @@ module AshFrame
           self.defaulted_args.merge!(defaulted)
         end
 
+        def optional *named, **valued
+          args = valued.merge named.zip([].fill(nil, 0..named.length)).to_h
+          self.defaulted_args.merge!(args)
+        end
+
         def [] *args, **opts
           new(*args, **opts).send :run
         end
@@ -54,13 +59,13 @@ module AshFrame
           var = :"@#{ k }"
           instance_variable_set var, v
 
-          self.class.send :define_method, k do
-            instance_variable_get var
-          end
+          # self.class.send :define_method, k do
+          #   instance_variable_get var
+          # end
 
-          self.class.send :define_method, :"#{ k }=" do |nv|
-            instance_variable_set var, nv
-          end
+          # self.class.send :define_method, :"#{ k }=" do |nv|
+          #   instance_variable_set var, nv
+          # end
         end
       end
 
