@@ -13,8 +13,13 @@ module AshFrame
         @errors ||= []
       end
 
-      def add_error message:, **opts
-        errors.push opts.merge({ message: message })
+      def add_error exception=nil, message: nil, **opts
+        message ||= exception.message if exception.kind_of? Exception
+        errors.push opts.merge({ message: message, exception: exception })
+      end
+
+      def successful?
+        errors.empty?
       end
     end
   end

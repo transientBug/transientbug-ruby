@@ -27,7 +27,6 @@ class Importer
 
   def import_image io
     io_filename = io.full_name
-    ext         = io_filename.split('.').last
 
     unless metadata_by_filename.has_key? io_filename
       fail "Image #{ io_filename } not in image metadata, skipping"
@@ -36,14 +35,19 @@ class Importer
     meta = metadata_by_filename[io_filename]
     tags = meta['tags'].map{ |tag| tag.gsub '_', ' ' }
 
-    Blocks::Gifs::Upload.call io_object: io,
-                              extension: ext,
-                              user: user,
-                              title: meta['title'],
-                              tags: tags,
-                              enabled: !meta['disable'],
-                              short_code: meta['short_code'],
-                              created_at: Time.at(meta['created'])
+    Tempfile.open do |f|
+      f.binmode
+      f.write io.read
+      f.rewind
+
+      Blocks::Gifs::Upload.call io_object: f,
+                                user: user,
+                                title: meta['title'],
+                                tags: tags,
+                                enabled: !meta['disable'],
+                                short_code: meta['short_code'],
+                                created_at: Time.at(meta['created'])
+    end
   end
 
   def self.import! args

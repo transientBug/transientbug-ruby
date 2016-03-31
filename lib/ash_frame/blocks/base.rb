@@ -18,11 +18,15 @@ module AshFrame
         def require *required, **defaulted
           self.required_args.push(required).flatten!
           self.defaulted_args.merge!(defaulted)
+
+          setup_accessors!(*required, **defaulted)
         end
 
         def optional *named, **valued
           args = valued.merge named.zip([].fill(nil, 0..named.length)).to_h
           self.defaulted_args.merge!(args)
+
+          setup_accessors!(*named, **valued)
         end
 
         def [] *args, **opts
@@ -30,10 +34,20 @@ module AshFrame
         end
 
         alias_method :call, :[]
+
+        private
+
+        def setup_accessors! *args, **opts
+          [ args, opts.keys ].flatten.each do |arg|
+            attr_accessor arg
+          end
+        end
       end
 
+      include AshFrame::Blocks::Errors
+
       include ActiveSupport::Callbacks
-      define_callbacks :initialize, :logic
+      define_callbacks :initialize, :logic, terminator: -> (_, result) { result == false }
 
       attr_accessor :result, :namespace
 
@@ -58,14 +72,6 @@ module AshFrame
         @_opts.each do |k, v|
           var = :"@#{ k }"
           instance_variable_set var, v
-
-          # self.class.send :define_method, k do
-          #   instance_variable_get var
-          # end
-
-          # self.class.send :define_method, :"#{ k }=" do |nv|
-          #   instance_variable_set var, nv
-          # end
         end
       end
 
@@ -96,7 +102,11 @@ module AshFrame
         args = [ @_args, args, @_opts, opts ].flatten if func.parameters.any?
 
         run_callbacks :logic do
-          self.result = func.call(*args)
+          begin
+            self.result = func.call(*args)
+          rescue => e
+            add_error e
+          end
         end
 
         self

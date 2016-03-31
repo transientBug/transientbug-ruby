@@ -84,16 +84,15 @@ class GifController < ApplicationController
     tags = params[:tags].split(',').map{ |e| e.strip }.uniq
     enabled = params[:enabled] || false
 
-    ext = params[:file][:filename].split('.').last
     block = Blocks::Gifs::Upload.call io_object: params[:file][:tempfile],
-                                      extension: ext,
                                       user: current_user,
                                       title: params[:title],
-                                      tags: tags, enabled: enabled
+                                      tags: tags,
+                                      enabled: enabled
 
     if block.errors.any?
-      flash[:error] = block.errors.map{ |e| e[:message] }
-      halt
+      flash[:error] = block.errors.map{ |e| e[:message] }.join ', '
+      return haml :'gifs/new'
     end
 
     redirect to("/gif/#{ block.filename }")
