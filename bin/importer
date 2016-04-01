@@ -27,7 +27,6 @@ class Importer
 
   def import_image io
     io_filename = io.full_name
-    ext         = io_filename.split('.').last
 
     unless metadata_by_filename.has_key? io_filename
       fail "Image #{ io_filename } not in image metadata, skipping"
@@ -36,30 +35,18 @@ class Importer
     meta = metadata_by_filename[io_filename]
     tags = meta['tags'].map{ |tag| tag.gsub '_', ' ' }
 
-    output_filename = [ meta['short_code'], ext ].join '.'
-    output_path     = AshFrame.root.join 'public', 'images', 'gifs', output_filename
-
-    first_frame_output_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', output_filename
-
-    Tempfile.open output_filename do |f|
+    Tempfile.open do |f|
       f.binmode
       f.write io.read
       f.rewind
 
-      mm_gif = MiniMagick::Image.open f.path
-      mm_gif.frames.first.write first_frame_output_path
-
-      f.rewind
-
-      output_path.write f.read
-
-      Gif.create filename:   output_filename,
-                 short_code: meta['short_code'],
-                 title:      meta['title'],
-                 tags:       tags,
-                 enabled:    !meta['disable'],
-                 created_at: Time.at(meta['created']),
-                 user:       user
+      Blocks::Gifs::Upload.call io_object: f,
+                                user: user,
+                                title: meta['title'],
+                                tags: tags,
+                                enabled: !meta['disable'],
+                                short_code: meta['short_code'],
+                                created_at: Time.at(meta['created'])
     end
   end
 

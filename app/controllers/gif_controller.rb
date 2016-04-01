@@ -13,9 +13,10 @@ class GifController < ApplicationController
   get '/gifs' do
     skip_gif_filenames = DB[:gifs].select(:filename).where(enabled: false).map{ |e| e[:filename] }
 
-    gif_filenames = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+    gif_filenames = Dir[ AshFrame.root.join('public', 'images', 'gifs', '*') ].map do |img|
+      next if File.directory? img
       img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
-    end.reject{ |img| skip_gif_filenames.include? img }.sort
+    end.compact.reject{ |img| skip_gif_filenames.include? img }.sort
 
     gifs = paginate gif_filenames
 
@@ -44,9 +45,10 @@ class GifController < ApplicationController
 
     skip_gif_filenames = DB[:gifs].select(:filename).where(enabled: false).map{ |e| e[:filename] }
 
-    gif_filenames = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+    gif_filenames = Dir[ AshFrame.root.join('public', 'images', 'gifs', '*') ].map do |img|
+      next if File.directory? img
       img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
-    end.select{ |img| skip_gif_filenames.include? img }.sort
+    end.compact.select{ |img| skip_gif_filenames.include? img }.sort
 
     gifs = paginate gif_filenames
 
@@ -82,53 +84,18 @@ class GifController < ApplicationController
     tags = params[:tags].split(',').map{ |e| e.strip }.uniq
     enabled = params[:enabled] || false
 
-    taken_short_codes = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
-      name = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' ).split '.'
-      name.pop
-      name.join '.'
+    block = Blocks::Gifs::Upload.call io_object: params[:file][:tempfile],
+                                      user: current_user,
+                                      title: params[:title],
+                                      tags: tags,
+                                      enabled: enabled
+
+    if block.errors.any?
+      flash[:error] = block.errors.map{ |e| e[:message] }.join ', '
+      return haml :'gifs/new'
     end
 
-    gen_short_code = -> { SecureRandom.hex(5).upcase }
-    short_code = gen_short_code[]
-    while taken_short_codes.include? short_code
-      short_code = gen_short_code[]
-    end
-
-    ext = params[:file][:filename].split('.').last
-    filename = [ short_code, ext ].join '.'
-
-    output_path = AshFrame.root.join 'public', 'images', 'gifs', filename
-    first_frame_path = AshFrame.root.join 'public', 'images', 'gifs', 'first', filename
-
-    gif = Gif.new title: params[:title],
-                  tags: tags,
-                  enabled: enabled,
-                  short_code: short_code,
-                  filename: filename,
-                  user: current_user
-
-    unless gif.valid?
-      flash[:error] = gif.errors
-      haml :'gifs/new'
-      halt
-    end
-
-    Tempfile.open short_code do |f|
-      f.binmode
-      f.write params[:file][:tempfile].read
-      f.rewind
-
-      mm_gif = MiniMagick::Image.open f.path
-      mm_gif.frames.first.write first_frame_path
-
-      f.rewind
-
-      output_path.write f.read
-    end
-
-    gif.save
-
-    redirect to("/gif/#{ filename }")
+    redirect to("/gif/#{ block.filename }")
   end
 
   get '/gifs/search' do
@@ -149,13 +116,15 @@ class GifController < ApplicationController
   get '/gif/:id' do
     id = params[:id]
 
-    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '*') ].map do |img|
+      next if File.directory? img
+
       filename = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
       short_code = filename.split '.'
       short_code.pop
 
       OpenStruct.new short_code: short_code.join('.'), filename: filename
-    end
+    end.compact
 
     gif = filename_short_code.find do |hash|
       hash.filename == id || hash.short_code == id
@@ -186,13 +155,15 @@ class GifController < ApplicationController
 
     id = params[:id]
 
-    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '**/*') ].map do |img|
+    filename_short_code = Dir[ AshFrame.root.join('public', 'images', 'gifs', '*') ].map do |img|
+      next if File.directory? img
+
       filename = img.gsub( AshFrame.root.join('public', 'images', 'gifs').to_s + '/', '' )
       short_code = filename.split '.'
       short_code.pop
 
       { short_code: short_code.join('.'), filename: filename }
-    end
+    end.compact
 
     gif = filename_short_code.find do |hash|
       hash[:filename] == id || hash[:short_code] == id

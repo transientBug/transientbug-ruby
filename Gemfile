@@ -88,8 +88,10 @@ gem 'honeybadger'
 # gem 'classifier-reborn', path: '../contrib/classifier-reborn' # Local
 # gem 'classifier-reborn', git: 'https://github.com/JoshAshby/classifier-reborn.git' # Git
 
-# Image handling
+# File Handling YOLO
+gem 'rb-inotify'
 gem 'mini_magick'
+gem 'mimemagic'
 
 group :doc do
   gem 'yard'
